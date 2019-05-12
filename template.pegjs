@@ -1,18 +1,3 @@
-{
-  function j(string) { return string.join('') }
-  function r() {
-    let result = {}
-
-    for (let i = 0; i < (arguments.length / 2); i += 1) {
-      if (arguments[i * 2 + 1] !== null) {
-        result[arguments[i * 2]] = arguments[i * 2 + 1]
-      }
-    }
-
-    return result
-  }
-}
-
 template = (interpolation / tag / text)+
 
 text =
@@ -30,14 +15,14 @@ interpolation =
   value:value space
   filters:filter*
   ws close_interpolation {
-    return r('interpolation', r('filters', filters, 'value', value))
+    return { 'interpolation': { filters, value } }
   }
 
 filter =
     "|" ws
     method:method ws
     parameters:parameters?
-    { return r('method', method, 'parameters', parameters) }
+    { return { method, parameters } }
 
 parameters = short_array / short_hash / value
 
@@ -54,12 +39,12 @@ tag =
     elsif_values:(elsif_tag template)*
     else_value:(else_tag template)?
     endif_tag
-  ) { return r('if', if_value, 'elsif', elsif_value, 'else', else_value) }
+  ) { return { 'if': if_value, 'elsif': elsif_value, 'else': else_value } }
   /
   (
     for_value:(for_tag template)
     endfor_tag
-  ) { return r('for', for_value) }
+  ) { return { 'for': for_value } }
 
 if_tag = open_tag ws "if" expression ws close_tag
 elsif_tag = open_tag ws "elsif" expression ws close_tag
@@ -72,13 +57,13 @@ endfor_tag = open_tag ws "endfor" ws close_tag
 // value
 value =
   value:(
-    v:integer { return r('integer', v) } /
-    v:float { return r('float', v) } /
-    v:string { return r('string', v) } /
-    v:array { return r('array', v) } /
-    v:hash { return r('hash', v) } /
-    v:boolean { return r('boolean', v) } /
-    v:variable { return r('variable', v) }
+    integer:integer { return { integer } } /
+    float:float { return { float } } /
+    string:string { return { string } } /
+    array:array { return { array } } /
+    hash:hash { return { hash } } /
+    boolean:boolean { return { boolean } } /
+    variable:variable { return { variable } }
   )
 
 reserved_names =
