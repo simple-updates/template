@@ -11,40 +11,36 @@
   }
 }
 
-template =
-  (
-    interpolation /
-    tag /
-    text2
-  )+
+template = (interpolation / tag / text)+
 
-text2 =
-  (!open_tag .)+
-  // (!open_interpolation !open_tag .)+
+text =
+  $(!open_interpolation !open_tag .)+
 
-ws = (" " / "\n")*
-value = [^ ]
-expression = text2
-variable = text2
+ws "whitespace" = (" " / "\n")*
+value = $(!" " .)+
+expression = text
+variable = text
 
 // {{ this }}
 open_interpolation = "{{"
 close_interpolation = "}}"
 
 not_close_interpolation =
-  ws !close_interpolation m:value ws { return m }
+  ws !close_interpolation value:value ws { return value }
 
 interpolation =
-  open_interpolation m:not_close_interpolation+ close_interpolation { return { 'interpolation': j(m) } }
+  open_interpolation
+  value:not_close_interpolation+
+  close_interpolation {
+    return r('interpolation', j(value))
+  }
 
 // {% this %}
 open_tag = "{%"
 close_tag = "%}"
 
 not_close_tag =
-  ws !close_tag m:value ws { return m }
-
-// tag_end open_tag m:not_close_tag+ close_tag { return j(m) }
+  ws !close_tag value:value ws { return value }
 
 tag =
   (

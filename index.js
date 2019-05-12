@@ -1,13 +1,26 @@
-var peg = require("pegjs")
-var fs = require('fs')
-var process = require('process')
+let log = console.log
+let peg = require("pegjs")
+let fs = require('fs')
+let process = require('process')
+var Tracer = require('pegjs-backtrace');
 
-var filename = "template.pegjs"
+let filename = "template.pegjs"
 
-var grammar = fs.readFileSync(process.cwd() + "/" + filename).toString()
+let grammar = fs.readFileSync("template.pegjs", "utf8")
+let parser = peg.generate(grammar, { trace: true })
+let source = process.argv[2] || "this is an {{ example }}"
+let tracer = new Tracer(source, { showFullPath: true })
 
-var ast = peg.parser.parse(grammar)
+try {
+  let result = parser.parse(source, { tracer: tracer })
+  log(result)
+} catch (error) {
+  log(tracer.getBacktraceString())
+  log({ source: source })
+  log({ name: error.name })
+  log({ message: error.message })
+  log({ expected: error.expected })
+  log({ found: error.found })
+  log({ found: error.location })
+}
 
-var parser = peg.generate(grammar);
-
-console.log(parser.parse(process.argv[2] || "this is an {{ example }}"))
