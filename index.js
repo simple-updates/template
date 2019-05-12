@@ -1,4 +1,5 @@
 let log = console.log
+let json = (obj) => JSON.stringify(obj, null, 2)
 let peg = require("pegjs")
 let fs = require('fs')
 let process = require('process')
@@ -14,6 +15,7 @@ let tracer = new Tracer(source, { showFullPath: true })
 try {
   let result = parser.parse(source, { tracer: tracer })
   log(result)
+  log(json(result))
 } catch (error) {
   log(tracer.getBacktraceString())
   log({ source: source })
