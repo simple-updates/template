@@ -11,21 +11,22 @@ u = require('./utils')
 
 ARGV = require('minimist')(process.argv.slice(2),
   strings: ['grep', 'hidden-paths']
-  boolean: ['colored', 'debug', 'compile']
+  boolean: ['colored', 'debug', 'compile', 'use-compiled']
   default: {
     colored: true
     debug: false
     grep: null
     'hidden-paths': ""
     compile: false
+    'use-compiled': false
   }
 )
 
-options = ['_', 'colored', 'debug', 'grep', 'hidden-paths', 'compile']
+options = ['_', 'colored', 'debug', 'grep', 'hidden-paths', 'compile', 'use-compiled']
 extra_options = _(_.keys(ARGV)).without(...options)
 
 if _.any(extra_options) || ARGV._.length > 1
-  u.error("unrecognized options ", extra_options.join(', '))
+  u.error("unrecognized options #{extra_options.join(', ')}")
   u.error("\nUSAGE: parser [OPTIONS] INPUT")
   u.error("\n  options: #{options.join(', ')}")
   u.error("\n  defaults to stdin")
@@ -49,12 +50,19 @@ if ARGV.compile
     error(result.stderr, ARGV)
     process.exit(1)
 
-try
-  Template = require('./template')
-catch exception
-  u.error("parser is invalid\n")
-  u.log(exception)
-  process.exit(1)
+if ARGV['use-compiled']
+  if fs.existsSync('template.js')
+    try
+      Template = require('./template')
+    catch exception
+      u.error("parser is invalid\n")
+      u.log(exception)
+      process.exit(1)
+  else
+    u.error("template.js doesn't exist, you can compile it with --compile")
+    process.exit(1)
+else
+  Template = peg.generate(fs.readFileSync('template.pegjs', 'utf8'))
 
 try
   result = Template.parse(source, tracer: tracer)
