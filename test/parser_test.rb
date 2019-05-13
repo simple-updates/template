@@ -18,7 +18,10 @@ PARSER_PATH = File.join(File.dirname(__FILE__), '../parser')
 
 class Parser
   def self.parse(input)
-    out, err, status = Open3.capture3(PARSER_PATH, stdin_data: input)
+    out, err, status = Open3.capture3(
+      "#{PARSER_PATH} --debug=true --colored=false",
+      stdin_data: input
+    )
 
     SimpleHash.new(
       out: out,

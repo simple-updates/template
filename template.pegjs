@@ -41,7 +41,7 @@ filter =
   parameters:parameters?
   { return { method, parameters } }
 
-parameters = short_array / short_hash / value
+parameters = short_hash / short_array / value
 
 not_close_tag =
   ws !close_tag value:value ws
