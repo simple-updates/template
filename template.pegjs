@@ -25,7 +25,12 @@ interpolation =
     return { 'interpolation': { filters, value } }
   }
 
-tag = assign / if_ / for_
+tag =
+  tag:(
+    assign:assign { return { assign } } /
+    if_:if_ { return { 'if': if_ } } /
+    for_:for_ { return { 'for': for_ } }
+  ) { return { tag } }
 
 text =
   text:$(!open_interpolation !open_tag .)+
@@ -56,20 +61,28 @@ assign =
   { return { variable, value } }
 
 if_ =
-  if_value:(if_tag template)
-  elsif_values:(elsif_tag template)*
-  else_value:(else_tag template)?
+  if_value:if_tag
+  elsif_values:elsif_tag*
+  else_value:else_tag?
   endif_tag
   { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
 
 for_ =
   for_value:(for_tag template)
   endfor_tag
-  { return { 'for': for_value } }
+  template:template
+  { return { 'for': for_value, template: template } }
 
-if_tag = open_tag ws "if" ws expression ws close_tag
-elsif_tag = open_tag ws "elsif" ws expression ws close_tag
+if_tag =
+  open_tag ws "if" ws expression:expression ws close_tag template:template
+  { return { expression, template } }
+
+elsif_tag =
+  open_tag ws "elsif" ws expression:expression ws close_tag template:template
+  { return { expression, template } }
+
 else_tag = open_tag ws "else" ws close_tag
+
 endif_tag = open_tag ws "endif" ws close_tag
 
 for_tag = open_tag ws "for" ws variable ws "in" ws expression ws close_tag

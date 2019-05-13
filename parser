@@ -6,65 +6,32 @@ process = require('process')
 _ = require('underscore')
 color = require('kleur')
 Tracer = require('pegjs-backtrace')
-
-log = console.log
-json = (obj) -> JSON.stringify(obj, null, 2)
-
-error = (string) =>
-  if ARGV.colored
-    console.error(color.red(string))
-  else
-    console.error(string)
-
-printError = (source, exception) =>
-  throw exception unless exception.location
-  log(tracer.getBacktraceString()) if ARGV.debug
-  log(source)
-
-  start = exception.location.start
-  end = exception.location.end
-
-  error('^'.padStart(start.column, ' ').padEnd(end.column, '^')) if start
-  error("#{exception.name}: at \"#{exception.found || ""}\" (#{exception.message})")
-
-matchesNode = (node, state) =>
-  return if ARGV.grep and not node.path.match(ARGV.grep)
-
-  if state == "fail"
-    if node.type  == "rule.fail"
-      true
-    else
-      false
-  else
-    if node.type == "rule.match"
-      true
-    else
-      false
+spawnSync = require('child_process').spawnSync
+u = require('./utils')
 
 ARGV = require('minimist')(process.argv.slice(2),
   strings: ['grep', 'hidden-paths']
-  boolean: ['colored', 'debug']
+  boolean: ['colored', 'debug', 'compile']
   default: {
     colored: true
     debug: false
     grep: null
     'hidden-paths': ""
+    compile: false
   }
 )
 
-options = ['_', 'colored', 'debug', 'grep', 'hidden-paths']
+options = ['_', 'colored', 'debug', 'grep', 'hidden-paths', 'compile']
 extra_options = _(_.keys(ARGV)).without(...options)
 
 if _.any(extra_options) || ARGV._.length > 1
-  console.error("unrecognized options ", extra_options.join(', '))
-  console.error("\nUSAGE: parser [OPTIONS] INPUT")
-  console.error("\n  options: #{options.join(', ')}")
-  console.error("\n  defaults to stdin")
+  u.error("unrecognized options ", extra_options.join(', '))
+  u.error("\nUSAGE: parser [OPTIONS] INPUT")
+  u.error("\n  options: #{options.join(', ')}")
+  u.error("\n  defaults to stdin")
   process.exit(1)
 
 source = ARGV._[0]?.toString() || fs.readFileSync(0).toString().trim()
-grammar = fs.readFileSync('template.pegjs', 'utf8')
-parser = peg.generate(grammar, trace: true)
 
 hiddenPaths = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
 hiddenPaths = _.reject(hiddenPaths, (s) -> s == "")
@@ -72,12 +39,27 @@ hiddenPaths = _.reject(hiddenPaths, (s) -> s == "")
 tracer = new Tracer source,
   showFullPath: true,
   hiddenPaths: hiddenPaths
-  matchesNode: matchesNode
+  matchesNode: (node, state) => u.matchesNode(node, state, ARGV)
+
+if ARGV.compile
+  result = spawnSync('pegjs', ['template.pegjs'])
+
+  if result.error
+    log(result.stdout)
+    error(result.stderr, ARGV)
+    process.exit(1)
 
 try
-  result = parser.parse(source, tracer: tracer)
-  log(tracer.getParseTreeString()) if ARGV.debug
-  log(json(result))
+  Template = require('./template')
 catch exception
-  printError(source, exception)
+  u.error("parser is invalid\n")
+  u.log(exception)
+  process.exit(1)
+
+try
+  result = Template.parse(source, tracer: tracer)
+  u.log(tracer.getParseTreeString()) if ARGV.debug
+  u.log(u.json(result))
+catch exception
+  u.printError(source, exception, ARGV)
   process.exit(1)
