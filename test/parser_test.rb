@@ -1,20 +1,18 @@
-gem 'simple-hash'
+require 'bundler'
+Bundler.require(:default)
 
-require 'test/unit'
 require 'open3'
 require 'shellwords'
 
-class SimpleHash
-  def initialize(hash)
-    @hash = hash
-  end
+$irb_done = false
 
-  def method_missing(method_name, *args)
-    @hash.fetch(method_name)
-  end
+def irb
+  binding.of_caller(1).irb unless $irb_done
+  $irb_done = true
 end
 
 PARSER_PATH = File.join(File.dirname(__FILE__), '../parser')
+EXAMPLES = Dir[File.join(File.dirname(__FILE__), './examples/*')]
 
 class Parser
   def self.parse(input)
@@ -23,7 +21,7 @@ class Parser
       stdin_data: input
     )
 
-    SimpleHash.new(
+    ::Simple::Hash.new(
       out: out,
       err: err,
       success?: status.success?,
@@ -33,8 +31,8 @@ class Parser
 end
 
 class ParserTest < Test::Unit::TestCase
-  def self.test(&block)
-    define_method("test_#{rand(10e10).to_s(16)}", &block)
+  def self.test(name = nil, &block)
+    define_method("test_#{name || block.source}", &block)
   end
 
   def assert_parse(input)
@@ -43,7 +41,7 @@ class ParserTest < Test::Unit::TestCase
     assert_equal(
       "",
       result.err,
-      "#{result.output}\n\n  ./parser #{input.shellescape}\n\n"
+      "#{result.output}\n\n  ./parser \"#{input.gsub('"') { "\\\"" }}\"\n\n"
     )
   end
 
@@ -52,20 +50,10 @@ class ParserTest < Test::Unit::TestCase
   test { assert_parse("{{ variable | filter }} ") }
   test { assert_parse("{{ variable | filter arg: value, arg2: [V1, 1] }}") }
   test { assert_parse("{{ variable | filter1 | filter2 }} ") }
+  test { assert_parse("so how do you do this? with {}? or %?") }
+  test { assert_parse("{{ user.names | join \", \" }}") }
+
+  EXAMPLES.each do |example|
+    test(example) { assert_parse(example) }
+  end
 end
-
-__END__
-
-'regular text'
-  'so how do you do this? with {}? or %?'
-  '{{ user.names | join ", " }}',
-  """
-    {% if user.admin %}
-      {{ "delete everything" | link_to "/secret/button" }}
-    {% endif %}
-  """,
-  """
-    {% for user in users %}
-      {{ user.name }}
-    {% endfor %}
-  """

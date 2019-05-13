@@ -54,10 +54,24 @@ else
 
 grammar = fs.readFileSync('template.pegjs', 'utf8')
 parser = peg.generate(grammar, trace: true)
-tracer = new Tracer(source, showFullPath: true)
+
+tracer = new Tracer source,
+  showFullPath: true,
+  matchesNode: (node, state) ->
+    if state == "fail"
+      if node.type  == "rule.fail"
+        true
+      else
+        false
+    else
+      if node.type == "rule.match"
+        true
+      else
+        false
 
 try
   log(json(parser.parse(source, tracer: tracer)))
+  log(tracer.getParseTreeString())
   process.exit(0)
 catch exception
   printError(source, exception)

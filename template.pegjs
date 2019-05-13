@@ -12,10 +12,10 @@ nil = "null"
 true = "true"
 false = "false"
 
-alpha = [a-zA-Z]
-alpha_num = [a-zA-Z0-9]
-digit = [0-9]
-non_zero_digit = [1-9]
+alpha = [a-zA-Z]+
+alpha_num = [a-zA-Z0-9]+
+digit = [0-9]+
+non_zero_digit = [1-9]+
 
 interpolation =
   open_interpolation space
@@ -38,10 +38,11 @@ expression =
 filter =
   "|" ws
   method:method ws
-  parameters:parameters?
+  parameters:parameters
   { return { method, parameters } }
 
-parameters = short_hash / short_array / value
+parameters =
+  value:(short_hash / short_array / value)
 
 not_close_tag =
   ws !close_tag value:value ws
@@ -119,7 +120,7 @@ array =
 short_array =
   first_value:value
   other_values:(ws "," ws value:value ws { return value })*
-  { return [first_value, ...other_values] }
+  { return { value: { array: [first_value, ...other_values] } } }
 
 hash =
   "{" ws
@@ -135,8 +136,9 @@ hash =
   { return key_values }
 
 short_hash =
-  key_value
-  (
+  first_key_value:key_value
+  other_key_values:(
     ws "," ws key_value:key_value
     { return key_value }
   )*
+  { return { value: { hash: [first_key_value, ...other_key_values] } } }
