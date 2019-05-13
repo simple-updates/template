@@ -27,7 +27,7 @@
 
 **trying it out without downloading anything**
 
-- copy the `template.pegjs` file
+- copy the [`template.pegjs`](https://raw.githubusercontent.com/simple-updates/template/master/template.pegjs) file
 - go to <https://pegjs.org/online>
 
 **trying it out locally**
