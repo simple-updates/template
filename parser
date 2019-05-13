@@ -1,17 +1,24 @@
+#!/usr/bin/env coffee
+
 peg = require('pegjs')
 fs = require('fs')
 process = require('process')
 _ = require('underscore')
-chalk = require('chalk')
+color = require('kleur')
 Tracer = require('pegjs-backtrace')
 
 log = console.log
 json = (obj) -> JSON.stringify(obj, null, 2)
-error = (string) -> log(chalk.redBright(string))
+colored = process.argv.length > 2
+error = (string) =>
+  if colored
+    console.error(color.red(string))
+  else
+    console.error(string)
 
-printError = (source, exception) ->
+printError = (source, exception) =>
   throw exception unless exception.location
-  log(tracer.getBacktraceString())
+  # log(tracer.getBacktraceString())
   log(source)
 
   start = exception.location.start
@@ -20,7 +27,11 @@ printError = (source, exception) ->
   error('^'.padStart(start.column, ' ').padEnd(end.column, '^')) if start
   error("#{exception.name}: at \"#{exception.found || ""}\" (#{exception.message})")
 
-source = fs.readFileSync(0).toString().trim()
+if process.argv.length > 2
+  source = process.argv.splice(2).join(' ')
+else
+  source = fs.readFileSync(0).toString().trim()
+
 grammar = fs.readFileSync('template.pegjs', 'utf8')
 parser = peg.generate(grammar, trace: true)
 tracer = new Tracer(source, showFullPath: true)
