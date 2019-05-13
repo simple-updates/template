@@ -7,24 +7,6 @@ _ = require('underscore')
 color = require('kleur')
 Tracer = require('pegjs-backtrace')
 
-usage = =>
-  console.error("\nUSAGE: parser [--colored] [--debug] INPUT")
-  console.error("\n  defaults to stdin")
-  process.exit(1)
-
-ARGV = require('minimist')(process.argv.slice(2),
-  strings: ['_']
-  boolean: ['colored', 'debug']
-  default: {
-    colored: true
-    debug: false
-  }
-  unknown: (option) =>
-    if option.startsWith("-")
-      console.error("unrecognized option", option)
-      usage()
-)
-
 log = console.log
 json = (obj) -> JSON.stringify(obj, null, 2)
 
@@ -45,34 +27,57 @@ printError = (source, exception) =>
   error('^'.padStart(start.column, ' ').padEnd(end.column, '^')) if start
   error("#{exception.name}: at \"#{exception.found || ""}\" (#{exception.message})")
 
-usage() if ARGV._.length > 1
+matchesNode = (node, state) =>
+  return if ARGV.grep and not node.path.match(ARGV.grep)
 
-if ARGV._.length > 0
-  source = ARGV._[0].toString()
-else
-  source = fs.readFileSync(0).toString().trim()
+  if state == "fail"
+    if node.type  == "rule.fail"
+      true
+    else
+      false
+  else
+    if node.type == "rule.match"
+      true
+    else
+      false
 
+ARGV = require('minimist')(process.argv.slice(2),
+  strings: ['grep', 'hidden-paths']
+  boolean: ['colored', 'debug']
+  default: {
+    colored: true
+    debug: false
+    grep: null
+    'hidden-paths': ""
+  }
+)
+
+options = ['_', 'colored', 'debug', 'grep', 'hidden-paths']
+extra_options = _(_.keys(ARGV)).without(...options)
+
+if _.any(extra_options) || ARGV._.length > 1
+  console.error("unrecognized options ", extra_options.join(', '))
+  console.error("\nUSAGE: parser [OPTIONS] INPUT")
+  console.error("\n  options: #{options.join(', ')}")
+  console.error("\n  defaults to stdin")
+  process.exit(1)
+
+source = ARGV._[0]?.toString() || fs.readFileSync(0).toString().trim()
 grammar = fs.readFileSync('template.pegjs', 'utf8')
 parser = peg.generate(grammar, trace: true)
 
+hiddenPaths = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
+hiddenPaths = _.reject(hiddenPaths, (s) -> s == "")
+
 tracer = new Tracer source,
   showFullPath: true,
-  matchesNode: (node, state) ->
-    if state == "fail"
-      if node.type  == "rule.fail"
-        true
-      else
-        false
-    else
-      if node.type == "rule.match"
-        true
-      else
-        false
+  hiddenPaths: hiddenPaths
+  matchesNode: matchesNode
 
 try
-  log(json(parser.parse(source, tracer: tracer)))
-  log(tracer.getParseTreeString())
-  process.exit(0)
+  result = parser.parse(source, tracer: tracer)
+  log(tracer.getParseTreeString()) if ARGV.debug
+  log(json(result))
 catch exception
   printError(source, exception)
   process.exit(1)

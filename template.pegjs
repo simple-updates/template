@@ -42,7 +42,10 @@ filter =
   { return { method, parameters } }
 
 parameters =
-  value:(short_hash / short_array / value)
+  (
+    ws value:(short_hash / short_array / value) ws
+    { return { value } }
+  )*
 
 not_close_tag =
   ws !close_tag value:value ws
@@ -119,8 +122,8 @@ array =
 
 short_array =
   first_value:value
-  other_values:(ws "," ws value:value ws { return value })*
-  { return { value: { array: [first_value, ...other_values] } } }
+  other_values:(ws "," ws value:value ws { return value })+
+  { return { array: [first_value, ...other_values] } }
 
 hash =
   "{" ws
@@ -141,4 +144,4 @@ short_hash =
     ws "," ws key_value:key_value
     { return key_value }
   )*
-  { return { value: { hash: [first_key_value, ...other_key_values] } } }
+  { return { hash: [first_key_value, ...other_key_values] } }
