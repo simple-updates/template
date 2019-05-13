@@ -12,7 +12,7 @@ def irb
 end
 
 PARSER_PATH = File.join(File.dirname(__FILE__), '../parser')
-EXAMPLES = Dir[File.join(File.dirname(__FILE__), './examples/*')]
+EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*')]
 
 class Parser
   def self.parse(input)
