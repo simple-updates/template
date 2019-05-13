@@ -15,22 +15,23 @@ error = (string, argv = {}) ->
     console.error(string)
 
 matchesNode = (node, state, argv = {}) ->
-  return if argv.grep and not node.path.match(argv.grep)
-
-  if state == "fail"
-    if node.type  == "rule.fail"
-      true
-    else
-      false
+  if argv.grep
+    node.path.match(argv.grep)
   else
-    if node.type == "rule.match"
-      true
+    if state == "fail"
+      if node.type  == "rule.fail"
+        true
+      else
+        false
     else
-      false
+      if node.type == "rule.match"
+        true
+      else
+        false
 
-printError = (source, exception, argv = {}) =>
+printError = (source, exception, tracer, argv = {}) =>
   throw exception unless exception.location
-  log(tracer.getBacktraceString()) if argv.debug
+  log(tracer.getParseTreeString()) if argv.debug
   log(source)
 
   start = exception.location.start

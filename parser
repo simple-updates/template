@@ -15,7 +15,7 @@ ARGV = require('minimist')(process.argv.slice(2),
   default: {
     colored: true
     debug: false
-    grep: null
+    grep: false
     'hidden-paths': ""
     compile: false
     'use-compiled': false
@@ -32,6 +32,8 @@ if _.any(extra_options) || ARGV._.length > 1
   u.error("\n  defaults to stdin")
   process.exit(1)
 
+ARGV.debug = true if ARGV.grep
+
 source = ARGV._[0]?.toString() || fs.readFileSync(0).toString().trim()
 
 hiddenPaths = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
@@ -43,7 +45,7 @@ tracer = new Tracer source,
   matchesNode: (node, state) => u.matchesNode(node, state, ARGV)
 
 if ARGV.compile
-  result = spawnSync('pegjs', ['template.pegjs'])
+  result = spawnSync('pegjs', ['template.pegjs', '--trace'])
 
   if result.error
     log(result.stdout)
@@ -62,12 +64,20 @@ if ARGV['use-compiled']
     u.error("template.js doesn't exist, you can compile it with --compile")
     process.exit(1)
 else
-  Template = peg.generate(fs.readFileSync('template.pegjs', 'utf8'))
+  try
+    Template = peg.generate(
+      fs.readFileSync('template.pegjs', 'utf8')
+      trace: true
+    )
+  catch exception
+    u.error("parser can't be generated\n")
+    u.error("#{exception.name}: #{exception.message}")
+    process.exit(1)
 
 try
   result = Template.parse(source, tracer: tracer)
   u.log(tracer.getParseTreeString()) if ARGV.debug
   u.log(u.json(result))
 catch exception
-  u.printError(source, exception, ARGV)
+  u.printError(source, exception, tracer, ARGV)
   process.exit(1)
