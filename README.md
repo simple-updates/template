@@ -11,12 +11,14 @@
 </p>
 
 <ul>
-  {% for project in projects | where '!fork' %}
-    <li>
-      <a href="{{ project.url }}">
-        {{ project.name }}
-      </a>
-    </li>
+  {% for project in projects %}
+    {% if project.fork | not %}
+      <li>
+        <a href="{{ project.url }}">
+          {{ project.name }}
+        </a>
+      </li>
+    {% endif %}
   {% endfor %}
 </ul>
 
