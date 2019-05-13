@@ -1,17 +1,21 @@
 template = (interpolation / tag / text)+
 
-text =
-  text:$(!open_interpolation !open_tag .)+
-  { return { text } }
-
 space = (" " / "\n")+
 ws "whitespace" = (" " / "\n")*
 single_quote = "'"
 double_quote = '"'
-
-// {{ this }}
 open_interpolation = "{{"
 close_interpolation = "}}"
+open_tag = "{%"
+close_tag = "%}"
+nil = "null"
+true = "true"
+false = "false"
+
+alpha = [a-zA-Z]
+alpha_num = [a-zA-Z0-9]
+digit = [0-9]
+non_zero_digit = [1-9]
 
 interpolation =
   open_interpolation space
@@ -21,33 +25,43 @@ interpolation =
     return { 'interpolation': { filters, value } }
   }
 
+tag = assign / if_ / for_
+
+text =
+  text:$(!open_interpolation !open_tag .)+
+  { return { text } }
+
+expression =
+  value:value space filters:filter*
+  { return { value, filters } }
+
 filter =
-    "|" ws
-    method:method ws
-    parameters:parameters?
-    { return { method, parameters } }
+  "|" ws
+  method:method ws
+  parameters:parameters?
+  { return { method, parameters } }
 
 parameters = short_array / short_hash / value
 
-// {% this %}
-open_tag = "{%"
-close_tag = "%}"
-
 not_close_tag =
-  ws !close_tag value:value ws { return value }
+  ws !close_tag value:value ws
+  { return value }
 
-tag =
-  (
-    if_value:(if_tag template)
-    elsif_values:(elsif_tag template)*
-    else_value:(else_tag template)?
-    endif_tag
-    { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
-  ) / (
-    for_value:(for_tag template)
-    endfor_tag
-    { return { 'for': for_value } }
-  )
+assign =
+  variable:variable ws "=" ws value:value
+  { return { variable, value } }
+
+if_ =
+  if_value:(if_tag template)
+  elsif_values:(elsif_tag template)*
+  else_value:(else_tag template)?
+  endif_tag
+  { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
+
+for_ =
+  for_value:(for_tag template)
+  endfor_tag
+  { return { 'for': for_value } }
 
 if_tag = open_tag ws "if" ws expression ws close_tag
 elsif_tag = open_tag ws "elsif" ws expression ws close_tag
@@ -57,31 +71,26 @@ endif_tag = open_tag ws "endif" ws close_tag
 for_tag = open_tag ws "for" ws variable ws "in" ws expression ws close_tag
 endfor_tag = open_tag ws "endfor" ws close_tag
 
-// value
 value =
   value:(
-    integer:integer { return { integer } } /
-    float:float { return { float } } /
-    string:string { return { string } } /
-    array:array { return { array } } /
-    hash:hash { return { hash } } /
-    boolean:boolean { return { boolean } } /
-    variable:variable { return { variable } }
+    nil:nil
+    { return { nil } } /
+    integer:integer
+    { return { integer } } /
+    float:float
+    { return { float } } /
+    string:string
+    { return { string } } /
+    array:array
+    { return { array } } /
+    hash:hash
+    { return { hash } } /
+    boolean:boolean
+    { return { boolean } } /
+    variable:variable
+    { return { variable } }
   )
 
-reserved_names =
-  "if" / "elsif" / "else" / "endif" /
-  "for" / "endfor" /
-  "unless" / "endunless" /
-  "case" / "when" / "endcase" /
-  "assign" / "endassign" /
-  "comment" / "endcomment" /
-  "contains"
-
-alpha = [a-zA-Z]
-alpha_num = [a-zA-Z0-9]
-digit = [0-9]
-non_zero_digit = [1-9]
 name = $(alpha (alpha_num / ("_" alpha_num))*)
 variable = $(name ("." name)*)
 method = name
@@ -91,8 +100,11 @@ single_quoted_string = single_quote value(!single_quote .)* single_quote
 double_quoted_string = double_quote (!double_quote .)* double_quote
 string = $(single_quoted_string / double_quoted_string)
 key = name / string
-boolean = "true" / "false"
-key_value = key:key ":" space value:value ws { return { key, value } }
+boolean = true / false
+
+key_value =
+  key:key ":" space value:value ws
+  { return { key, value } }
 
 array =
   "[" ws
@@ -128,5 +140,3 @@ short_hash =
     ws "," ws key_value:key_value
     { return key_value }
   )*
-
-expression = value:value space filters:filter* { return { value, filters } }
