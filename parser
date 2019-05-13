@@ -7,18 +7,36 @@ _ = require('underscore')
 color = require('kleur')
 Tracer = require('pegjs-backtrace')
 
+usage = =>
+  console.error("\nUSAGE: parser [--colored] [--debug] INPUT")
+  console.error("\n  defaults to stdin")
+  process.exit(1)
+
+ARGV = require('minimist')(process.argv.slice(2),
+  strings: ['_']
+  boolean: ['colored', 'debug']
+  default: {
+    colored: true
+    debug: false
+  }
+  unknown: (option) =>
+    if option.startsWith("-")
+      console.error("unrecognized option", option)
+      usage()
+)
+
 log = console.log
 json = (obj) -> JSON.stringify(obj, null, 2)
-colored = process.argv.length > 2
+
 error = (string) =>
-  if colored
+  if ARGV.colored
     console.error(color.red(string))
   else
     console.error(string)
 
 printError = (source, exception) =>
   throw exception unless exception.location
-  # log(tracer.getBacktraceString())
+  log(tracer.getBacktraceString()) if ARGV.debug
   log(source)
 
   start = exception.location.start
@@ -27,8 +45,10 @@ printError = (source, exception) =>
   error('^'.padStart(start.column, ' ').padEnd(end.column, '^')) if start
   error("#{exception.name}: at \"#{exception.found || ""}\" (#{exception.message})")
 
-if process.argv.length > 2
-  source = process.argv.splice(2).join(' ')
+usage() if ARGV._.length > 1
+
+if ARGV._.length > 0
+  source = ARGV._[0].toString()
 else
   source = fs.readFileSync(0).toString().trim()
 
@@ -38,6 +58,7 @@ tracer = new Tracer(source, showFullPath: true)
 
 try
   log(json(parser.parse(source, tracer: tracer)))
+  process.exit(0)
 catch exception
   printError(source, exception)
   process.exit(1)
