@@ -1,10 +1,13 @@
 template = (interpolation / tag / text)+
 
 text =
-  $(!open_interpolation !open_tag .)+
+  text:$(!open_interpolation !open_tag .)+
+  { return { text } }
 
 space = (" " / "\n")+
 ws "whitespace" = (" " / "\n")*
+single_quote = "'"
+double_quote = '"'
 
 // {{ this }}
 open_interpolation = "{{"
@@ -39,15 +42,15 @@ tag =
     elsif_values:(elsif_tag template)*
     else_value:(else_tag template)?
     endif_tag
-  ) { return { 'if': if_value, 'elsif': elsif_value, 'else': else_value } }
-  /
-  (
+    { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
+  ) / (
     for_value:(for_tag template)
     endfor_tag
-  ) { return { 'for': for_value } }
+    { return { 'for': for_value } }
+  )
 
-if_tag = open_tag ws "if" expression ws close_tag
-elsif_tag = open_tag ws "elsif" expression ws close_tag
+if_tag = open_tag ws "if" ws expression ws close_tag
+elsif_tag = open_tag ws "elsif" ws expression ws close_tag
 else_tag = open_tag ws "else" ws close_tag
 endif_tag = open_tag ws "endif" ws close_tag
 
@@ -84,34 +87,41 @@ variable = $(name ("." name)*)
 method = name
 integer = $(non_zero_digit (digit / "_")*)
 float = "-"? integer "." integer ("e" ("+" / "-") integer)
-string_delimiter = '"' / "'"
-string = $(string_delimiter (!string_delimiter .)* string_delimiter)
-array = "[" ws (value ws "," ws)* "]"
-short_array = (value ws "," ws)+
+single_quoted_string = single_quote value(!single_quote .)* single_quote
+double_quoted_string = double_quote (!double_quote .)* double_quote
+string = $(single_quoted_string / double_quoted_string)
 key = name / string
 boolean = "true" / "false"
-
 key_value = key:key ":" space value:value ws { return { key, value } }
 
-// {}
-// { a: 1 }
-// { a: 1, b: 2 }
+array =
+  "[" ws
+  values:(
+    first_value:value
+    other_values:(ws "," ws value:value ws { return value })*
+    { return [first_value, ...other_values] }
+  )?
+  ws "]"
+  { return values }
+
+short_array =
+  first_value:value
+  other_values:(ws "," ws value:value ws { return value })*
+  { return [first_value, ...other_values] }
+
 hash =
-  "{"
-    ws
-    key_values:(
-      key_value
-      (
-        ws "," ws key_value:key_value
-        { return key_value }
-      )*
-    )?
-    ws
-  "}"
+  "{" ws
+  key_values:(
+    first_key_value:key_value
+    other_key_values:(
+      ws "," ws key_value:key_value
+      { return key_value }
+    )*
+    { return [first_key_value, ...other_key_values] }
+  )?
+  ws "}"
   { return key_values }
 
-// a: 1
-// a: 1, b: 2
 short_hash =
   key_value
   (
@@ -119,4 +129,4 @@ short_hash =
     { return key_value }
   )*
 
-expression = value
+expression = value:value space filters:filter* { return { value, filters } }
