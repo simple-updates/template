@@ -62,4 +62,4 @@ early version of the parser part
 
 **inspirations**
 
-very inspired by [liquid](https://shopify.github.io/liquid/).
+very inspired by liquid, json, ruby and coffeescript.
