@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-coffee -c parser.coffee
+coffee -c parser
 pegjs --trace template.pegjs
