@@ -28,6 +28,7 @@ tag =
   tag:(
     assign:assign { return { assign } } /
     if_:if_ { return { 'if': if_ } } /
+    unless:unless { return { unless } } /
     for_:for_ { return { 'for': for_ } }
   ) { return { tag } }
 
@@ -66,6 +67,11 @@ if_ =
   endif_tag
   { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
 
+unless =
+  unless:unless_tag
+  endunless_tag
+  { return unless }
+
 for_ =
   for_value:for_tag
   template:template?
@@ -83,6 +89,12 @@ elsif_tag =
 else_tag = open_tag ws "else" ws close_tag
 
 endif_tag = open_tag ws "endif" ws close_tag
+
+unless_tag =
+  open_tag ws "unless" ws expression:expression ws close_tag template:template?
+  { return { expression, template } }
+
+endunless_tag = open_tag ws "endunless" ws close_tag
 
 for_tag =
   open_tag ws "for" ws

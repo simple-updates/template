@@ -12,7 +12,7 @@
 
 <ul>
   {% for project in projects %}
-    {% if project.fork | not %}
+    {% unless project.fork %}
       <li>
         <a href="{{ project.url }}">
           {{ project.name }}

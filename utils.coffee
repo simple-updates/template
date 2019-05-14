@@ -9,11 +9,7 @@ isColored = (argv) ->
 
 log = (string, argv = {}) ->
   string = JSON.stringify(string) unless typeof string == "string"
-
-  if isColored(argv)
-    console.error(color.blue(string))
-  else
-    console.error(string)
+  console.error(string)
 
 error = (string, argv = {}) ->
   string = JSON.stringify(string) unless typeof string == "string"

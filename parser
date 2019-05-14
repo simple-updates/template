@@ -15,7 +15,7 @@ ARGV = require('minimist')(process.argv.slice(2),
   default: {
     colored: true
     debug: false
-    grep: false
+    grep: ""
     'hidden-paths': ""
     compile: false
     'use-compiled': false
@@ -38,7 +38,7 @@ if _.any(extra_options) || ARGV._.length > 1
   u.error("\n  defaults to stdin")
   process.exit(1)
 
-ARGV.debug = true if ARGV.grep
+ARGV.debug = true if ARGV.grep != "" || ARGV['node-type'] != ""
 
 source = ARGV._.join(' ')
 
@@ -55,9 +55,9 @@ tracer = new Tracer source,
   showFullPath: true,
   hiddenPaths: hiddenPaths
   matchesNode: (node, options) ->
-    if options.grep != "" and not node.path.match(options.grep)
+    if options.grep != "" and not node.path.includes(options.grep)
       false
-    else if options.nodeType != "" and not node.type == options.nodeType
+    else if options.nodeType != "" and node.type != options.nodeType
       false
     else
       true
@@ -93,21 +93,21 @@ else
     process.exit(1)
 
 matchOptions = {
-  grep: ARGV.grep
-  nodeType: ARGV['node-type']
+  grep: ARGV.grep || ""
+  nodeType: ARGV['node-type'] || ""
 }
 
 try
   result = Template.parse(source, tracer: tracer)
-  u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
-  u.log(result)
+  u.log(tracer.getParseTreeString(matchOptions), colored: false) if ARGV.debug
+  u.log(u.json(result))
 catch exception
   throw exception unless exception.location
 
-  u.log(tracer.getParseTreeString()) if ARGV.debug
+  u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
 
   if exception.location.start.line
-    u.log(source.split("\n")[exception.location.start.line])
+    u.log(source.split("\n")[exception.location.start.line - 1], colored: false)
   else
     u.log(source)
 
