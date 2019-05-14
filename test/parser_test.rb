@@ -5,6 +5,7 @@ Bundler.require(:default)
 
 require 'open3'
 require 'shellwords'
+require 'json'
 
 $irb_done = false
 
@@ -13,11 +14,14 @@ def irb
   $irb_done = true
 end
 
-system("../build.sh")
 
 PARSER_PATH = File.join(File.dirname(__FILE__), '../build/parser.js')
 EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*.template')]
 README = File.join(File.dirname(__FILE__), '../README.md')
+BUILD = File.join(File.dirname(__FILE__), '../build.sh')
+
+puts "execute #{BUILD}"
+`#{BUILD}`
 
 class Parser
   def self.parse(input)
@@ -50,12 +54,16 @@ class ParserTest < Test::Unit::TestCase
     )
   end
 
+  def json(object)
+    JSON.pretty_generate(object)
+  end
+
   def assert_equal_parse(input, hash)
     assert_parse(input)
 
     result = Parser.parse(input)
 
-    assert_equal(hash, JSON.parse(result.out))
+    assert_equal(json(hash), json(JSON.parse(result.out)))
   end
 
   test { assert_parse("regular text") }
@@ -67,7 +75,7 @@ class ParserTest < Test::Unit::TestCase
   test { assert_parse("{{ user.names | join \", \" }}") }
 
   test "text node" do
-    assert_equal_parse("a", { text: "a" })
+    assert_equal_parse("a", [{ text: "a" }])
   end
 
   (EXAMPLES + [README]).each do |example|

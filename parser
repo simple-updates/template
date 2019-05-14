@@ -73,9 +73,6 @@ ARGV.source = ARGV._.join(' ')
 unless process.stdin.isTTY
   ARGV.source += fs.readFileSync(0).toString().trim()
 
-if ARGV.source != "" and fs.existsSync(ARGV.source)
-  ARGV.source = fs.readFileSync(ARGV.source, 'utf8')
-
 ARGV['hidden-paths'] = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
 ARGV['hidden-paths'] = _.reject(ARGV['hidden-paths'], (s) -> s == "")
 

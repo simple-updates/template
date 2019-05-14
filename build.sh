@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-coffee -c -o build/parser.js parser
+coffee -c -o $(dirname "$0")/build/parser.js parser
 
-pegjs template.pegjs \
+pegjs $(dirname "$0")/template.pegjs \
   -O size \
-  -o build/template.js \
+  -o $(dirname "$0")/build/template.js \
   --trace \
   -a template \
   -f globals \
