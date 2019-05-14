@@ -18,7 +18,11 @@ non_zero_digit = [1-9]+
 
 interpolation =
   open_interpolation ws
-  value:value ws
+  value:(
+    short_hash /
+    short_array /
+    value
+  ) ws
   filters:filter*
   ws close_interpolation
   { return { 'interpolation': { filters, value } } }
