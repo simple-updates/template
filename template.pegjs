@@ -1,7 +1,6 @@
 template = (interpolation / tag / text)+
 
-space = (" " / "\n")+
-ws "whitespace" = (" " / "\n")*
+ws = (" " / "\n")*
 single_quote = "'"
 double_quote = '"'
 open_interpolation = "{{"
@@ -18,8 +17,8 @@ digit = [0-9]+
 non_zero_digit = [1-9]+
 
 interpolation =
-  open_interpolation space
-  value:value space
+  open_interpolation ws
+  value:value ws
   filters:filter*
   ws close_interpolation
   { return { 'interpolation': { filters, value } } }
@@ -37,7 +36,7 @@ text =
   { return { text } }
 
 expression =
-  value:value space filters:filter*
+  value:value ws filters:filter*
   { return { value, filters } }
 
 filter =
@@ -151,7 +150,7 @@ key = name / string
 boolean = true / false
 
 key_value =
-  key:key ":" space value:value ws
+  key:key ":" ws value:value ws
   { return { key, value } }
 
 array =
