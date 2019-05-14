@@ -18,7 +18,7 @@
           {{ project.name }}
         </a>
       </li>
-    {% endif %}
+    {% endunless %}
   {% endfor %}
 </ul>
 
@@ -34,7 +34,7 @@
 
 **trying it out locally**
 
-- `npm install` then `./parser "something {{ you provide }}"`
+- `npm install` then `./parser "something {{ "you provide" }}"`
   - see `parser` for options
 
 **tests**

@@ -79,14 +79,27 @@ for_ =
   { return { 'for': for_value, template: template } }
 
 if_tag =
-  open_tag ws "if" ws expression:expression ws close_tag template:template?
+  open_tag ws
+  "if" ws
+  expression:expression ws
+  close_tag
+  template:template?
   { return { expression, template } }
 
 elsif_tag =
-  open_tag ws "elsif" ws expression:expression ws close_tag template:template?
+  open_tag ws
+  "elsif" ws
+  expression:expression ws
+  close_tag
+  template:template?
   { return { expression, template } }
 
-else_tag = open_tag ws "else" ws close_tag
+else_tag =
+  open_tag ws
+  "else" ws
+  close_tag
+  template:template?
+  { return { template } }
 
 endif_tag = open_tag ws "endif" ws close_tag
 

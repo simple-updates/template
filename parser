@@ -14,7 +14,7 @@ color = require('kleur')
 peg = require('pegjs')
 Tracer = require('pegjs-backtrace')
 
-ROOT = __dirname
+DIR = __dirname
 
 # lib
 
@@ -28,7 +28,7 @@ u.isColored = =>
 
 u.log = (string) =>
   string = JSON.stringify(string) unless typeof string == "string"
-  console.error(string)
+  console.log(string)
 
 u.error = (string) =>
   string = JSON.stringify(string) unless typeof string == "string"
@@ -74,7 +74,7 @@ unless process.stdin.isTTY
   ARGV.source += fs.readFileSync(0).toString().trim()
 
 if ARGV.source != "" and fs.existsSync(ARGV.source)
-  ARGV.source = fs.readFileSync(source, 'utf8')
+  ARGV.source = fs.readFileSync(ARGV.source, 'utf8')
 
 ARGV['hidden-paths'] = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
 ARGV['hidden-paths'] = _.reject(ARGV['hidden-paths'], (s) -> s == "")
@@ -94,23 +94,21 @@ tracer = new Tracer ARGV.source,
 
 # Template
 
-if ARGV["use-compiled"]
-  try
-    Template = require("./template")
-  catch exception
-    u.error("parser doesn't exist or is invalid\n")
-    u.log(exception)
-    process.exit(1)
-else
+if fs.existsSync("#{DIR}/template.js")
+  Template = require("#{DIR}/template").Template
+else if fs.existsSync("#{DIR}/template.pegjs")
   try
     Template = peg.generate(
-      fs.readFileSync("#{ROOT}/template.pegjs", 'utf8')
+      fs.readFileSync("#{DIR}/template.pegjs", 'utf8')
       trace: true
     )
   catch exception
     u.error("parser can't be generated\n")
     u.error("#{exception.name}: #{exception.message}")
     process.exit(1)
+else
+  u.error("can't find template.js or template.pegjs")
+  process.exit(1)
 
 # parsing
 

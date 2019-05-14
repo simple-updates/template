@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+if ARGV.any? && File.exists?(ARGV.first)
+  source = File.read(ARGV.first)
+else
+  source = ARGV.join(' ')
+end
+
+source = source.gsub("{% assign ", "{% ")
+source = source.gsub(" == ", " | equals ")
+puts source

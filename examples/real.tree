@@ -1,0 +1,284 @@
+[
+  {
+    "text": "<p><label for=\""
+  },
+  {
+    "interpolation": {
+      "filters": [
+        {
+          "method": "to_id",
+          "parameters": []
+        }
+      ],
+      "value": {
+        "variable": "name"
+      }
+    }
+  },
+  {
+    "text": "\">"
+  },
+  {
+    "interpolation": {
+      "filters": [],
+      "value": {
+        "variable": "spec.label"
+      }
+    }
+  },
+  {
+    "text": " </label><span class=\"form--hint\">"
+  },
+  {
+    "interpolation": {
+      "filters": [],
+      "value": {
+        "variable": "spec.hint"
+      }
+    }
+  },
+  {
+    "text": " </span></p>"
+  },
+  {
+    "tag": {
+      "if": {
+        "if": {
+          "expression": {
+            "value": {
+              "variable": "spec.type"
+            },
+            "filters": [
+              {
+                "method": "equals",
+                "parameters": [
+                  {
+                    "value": {
+                      "string": "\"string\""
+                    }
+                  },
+                  {
+                    "value": {
+                      "variable": "and"
+                    }
+                  },
+                  {
+                    "value": {
+                      "variable": "spec.template"
+                    }
+                  }
+                ]
+              },
+              {
+                "method": "equals",
+                "parameters": [
+                  {
+                    "value": {
+                      "boolean": "true"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "template": [
+            {
+              "text": "<div data-controller=\"liquid\"><p><input data-action=\"input->liquid#render\" data-target=\"liquid.input\" id=\""
+            },
+            {
+              "interpolation": {
+                "filters": [
+                  {
+                    "method": "to_id",
+                    "parameters": []
+                  }
+                ],
+                "value": {
+                  "variable": "name"
+                }
+              }
+            },
+            {
+              "text": "\" name=\""
+            },
+            {
+              "interpolation": {
+                "filters": [],
+                "value": {
+                  "variable": "name"
+                }
+              }
+            },
+            {
+              "text": "\" placeholder=\""
+            },
+            {
+              "interpolation": {
+                "filters": [],
+                "value": {
+                  "variable": "spec.placeholder"
+                }
+              }
+            },
+            {
+              "text": "\" type=\"text\" value=\""
+            },
+            {
+              "interpolation": {
+                "filters": [
+                  {
+                    "method": "escape",
+                    "parameters": []
+                  }
+                ],
+                "value": {
+                  "variable": "value"
+                }
+              }
+            },
+            {
+              "text": "\"></p><pre data-target=\"liquid.output\"><code></code></pre><p></p></div>"
+            }
+          ]
+        },
+        "elsif": [
+          {
+            "expression": {
+              "value": {
+                "variable": "spec.type"
+              },
+              "filters": [
+                {
+                  "method": "equals",
+                  "parameters": [
+                    {
+                      "value": {
+                        "string": "\"text\""
+                      }
+                    },
+                    {
+                      "value": {
+                        "variable": "and"
+                      }
+                    },
+                    {
+                      "value": {
+                        "variable": "spec.template"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "method": "equals",
+                  "parameters": [
+                    {
+                      "value": {
+                        "boolean": "true"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "template": [
+              {
+                "text": "<div data-controller=\"liquid\"><details><summary>see data sample</summary><p><textarea data-target=\"liquid.parameters\" data-action=\"input->liquid#render input->auto-expand#expand\" data-controller=\"auto-expand\">"
+              },
+              {
+                "interpolation": {
+                  "filters": [
+                    {
+                      "method": "escape",
+                      "parameters": []
+                    }
+                  ],
+                  "value": {
+                    "variable": "spec.template_parameters"
+                  }
+                }
+              },
+              {
+                "text": "</textarea></p></details><p><textarea data-action=\"input->liquid#render input->auto-expand#expand\" data-controller=\"auto-expand\" data-target=\"liquid.input\" id=\""
+              },
+              {
+                "interpolation": {
+                  "filters": [
+                    {
+                      "method": "to_id",
+                      "parameters": []
+                    }
+                  ],
+                  "value": {
+                    "variable": "name"
+                  }
+                }
+              },
+              {
+                "text": "\" name=\""
+              },
+              {
+                "interpolation": {
+                  "filters": [],
+                  "value": {
+                    "variable": "name"
+                  }
+                }
+              },
+              {
+                "text": "\" placeholder=\""
+              },
+              {
+                "interpolation": {
+                  "filters": [],
+                  "value": {
+                    "variable": "spec.placeholder"
+                  }
+                }
+              },
+              {
+                "text": "\">"
+              },
+              {
+                "interpolation": {
+                  "filters": [
+                    {
+                      "method": "escape",
+                      "parameters": []
+                    }
+                  ],
+                  "value": {
+                    "variable": "value"
+                  }
+                }
+              },
+              {
+                "text": "</textarea></p><pre data-target=\"liquid.output\"><code></code></pre><p></p></div>"
+              }
+            ]
+          }
+        ],
+        "else": {
+          "template": [
+            {
+              "text": "<p>unsupported ("
+            },
+            {
+              "interpolation": {
+                "filters": [],
+                "value": {
+                  "variable": "spec.type"
+                }
+              }
+            },
+            {
+              "text": ")</p>"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "text": "\n"
+  }
+]
