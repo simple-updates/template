@@ -21,9 +21,8 @@ interpolation =
   open_interpolation space
   value:value space
   filters:filter*
-  ws close_interpolation {
-    return { 'interpolation': { filters, value } }
-  }
+  ws close_interpolation
+  { return { 'interpolation': { filters, value } } }
 
 tag =
   tag:(

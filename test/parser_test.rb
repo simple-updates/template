@@ -13,6 +13,7 @@ end
 
 PARSER_PATH = File.join(File.dirname(__FILE__), '../parser')
 EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*')]
+README = File.join(File.dirname(__FILE__), '../README')
 
 class Parser
   def self.parse(input)
@@ -53,7 +54,7 @@ class ParserTest < Test::Unit::TestCase
   test { assert_parse("so how do you do this? with {}? or %?") }
   test { assert_parse("{{ user.names | join \", \" }}") }
 
-  EXAMPLES.each do |example|
+  (EXAMPLES + [README]).each do |example|
     test(example) { assert_parse(example) }
   end
 end

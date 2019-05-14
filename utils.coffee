@@ -1,43 +1,26 @@
-log = console.log
 _ = require('underscore')
 color = require('kleur')
 
 json = (obj) ->
   JSON.stringify(obj, null, 2)
 
-error = (string, argv = {}) ->
-  if typeof argv.colored != "boolean"
-    argv.colored = true
+isColored = (argv) ->
+  typeof argv.colored != "boolean" || argv.colored == true
 
-  if argv.colored and typeof string == "string"
+log = (string, argv = {}) ->
+  string = JSON.stringify(string) unless typeof string == "string"
+
+  if isColored(argv)
+    console.error(color.blue(string))
+  else
+    console.error(string)
+
+error = (string, argv = {}) ->
+  string = JSON.stringify(string) unless typeof string == "string"
+
+  if isColored(argv)
     console.error(color.red(string))
   else
     console.error(string)
 
-matchesNode = (node, state, argv = {}) ->
-  if argv.grep
-    node.path.match(argv.grep)
-  else
-    if state == "fail"
-      if node.type  == "rule.fail"
-        true
-      else
-        false
-    else
-      if node.type == "rule.match"
-        true
-      else
-        false
-
-printError = (source, exception, tracer, argv = {}) =>
-  throw exception unless exception.location
-  log(tracer.getParseTreeString()) if argv.debug
-  log(source)
-
-  start = exception.location.start
-  end = exception.location.end
-
-  error('^'.padStart(start.column, ' ').padEnd(end.column, '^')) if start
-  error("#{exception.name}: at \"#{exception.found || ""}\" (#{exception.message})")
-
-module.exports = { log, json, error, printError, matchesNode }
+module.exports = { log, json, error }
