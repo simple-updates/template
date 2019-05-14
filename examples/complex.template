@@ -6,6 +6,6 @@ hello {{ user.name | capitalize }}
 
   {% now = "now" | to_date %}
   {% if todo.due_date | and todo.due_date | to_date | more_than now %}
-    due by {% todo.due_date | to_date ":short" %}
+    due by {{ todo.due_date | to_date ":short" }}
   {% endif %}
 {% endfor %}

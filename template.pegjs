@@ -64,8 +64,9 @@ assign =
   variable:variable ws
   "=" ws
   value:value ws
+  filters:filter* ws
   close_tag
-  { return { variable, value } }
+  { return { variable, value, filters } }
 
 if_ =
   if_value:if_tag

@@ -16,8 +16,8 @@ end
 system("../build.sh")
 
 PARSER_PATH = File.join(File.dirname(__FILE__), '../build/parser.js')
-EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*')]
-README = File.join(File.dirname(__FILE__), '../README')
+EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*.template')]
+README = File.join(File.dirname(__FILE__), '../README.md')
 
 class Parser
   def self.parse(input)
