@@ -29,10 +29,10 @@ interpolation =
 
 tag =
   tag:(
-    assign:assign { return { assign } } /
     if_:if_ { return { 'if': if_ } } /
     unless:unless { return { unless } } /
-    for_:for_ { return { 'for': for_ } }
+    for_:for_ { return { 'for': for_ } } /
+    assign:assign { return { assign } }
   ) { return { tag } }
 
 text =
@@ -60,7 +60,11 @@ not_close_tag =
   { return value }
 
 assign =
-  variable:variable ws "=" ws value:value
+  open_tag ws
+  variable:variable ws
+  "=" ws
+  value:value ws
+  close_tag
   { return { variable, value } }
 
 if_ =

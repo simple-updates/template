@@ -46,9 +46,9 @@ ARGV = minimist(process.argv.slice(2),
   default: {
     colored: true
     debug: false
-    grep: ""
+    grep: null
     'hidden-paths': ""
-    'node-type': ""
+    'node-type': null
   }
 )
 
@@ -66,7 +66,7 @@ if _.any(extra_options) || ARGV._.length > 1
   u.error("\n  defaults to stdin")
   process.exit(1)
 
-ARGV.debug = true if ARGV.grep != "" || ARGV['node-type'] != ""
+ARGV.debug = true if ARGV.grep != null || ARGV['node-type'] != null
 
 ARGV.source = ARGV._.join(' ')
 
@@ -85,9 +85,9 @@ tracer = new Tracer ARGV.source,
   showFullPath: true,
   hiddenPaths: ARGV['hidden-paths']
   matchesNode: (node, options) ->
-    if options.grep != "" and not node.path.includes(options.grep)
+    if typeof options.grep == "string" and not node.path.includes(options.grep)
       false
-    else if options.nodeType != "" and node.type != options.nodeType
+    else if typeof options.nodeType == "string" and node.type != options.nodeType
       false
     else
       true
@@ -113,8 +113,8 @@ else
 # parsing
 
 matchOptions = {
-  grep: ARGV.grep || ""
-  nodeType: ARGV['node-type'] || ""
+  grep: ARGV.grep || null
+  nodeType: ARGV['node-type'] || null
 }
 
 try
@@ -124,7 +124,8 @@ try
 catch exception
   throw exception unless exception.location
 
-  u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
+  # u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
+  u.log(tracer.getBacktraceString(matchOptions)) if ARGV.debug
 
   if exception.location.start.line
     u.log(ARGV.source.split("\n")[exception.location.start.line - 1], colored: false)

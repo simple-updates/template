@@ -13,14 +13,16 @@ def irb
   $irb_done = true
 end
 
-PARSER_PATH = File.join(File.dirname(__FILE__), '../parser.js')
+system("../build.sh")
+
+PARSER_PATH = File.join(File.dirname(__FILE__), '../build/parser.js')
 EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*')]
 README = File.join(File.dirname(__FILE__), '../README')
 
 class Parser
   def self.parse(input)
     out, err, status = Open3.capture3(
-      "node #{PARSER_PATH} --use-compiled --colored=false",
+      "node #{PARSER_PATH} --colored=false",
       stdin_data: input
     )
 
