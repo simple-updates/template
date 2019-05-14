@@ -18,7 +18,7 @@ README = File.join(File.dirname(__FILE__), '../README')
 class Parser
   def self.parse(input)
     out, err, status = Open3.capture3(
-      "#{PARSER_PATH} --debug=true --colored=false",
+      "#{PARSER_PATH} --use-compiled --colored=false",
       stdin_data: input
     )
 
@@ -46,6 +46,14 @@ class ParserTest < Test::Unit::TestCase
     )
   end
 
+  def assert_equal_parse(input, hash)
+    assert_parse(input)
+
+    result = Parser.parse(input)
+
+    assert_equal(hash, JSON.parse(result.out))
+  end
+
   test { assert_parse("regular text") }
   test { assert_parse("{{ variable }} ") }
   test { assert_parse("{{ variable | filter }} ") }
@@ -53,6 +61,13 @@ class ParserTest < Test::Unit::TestCase
   test { assert_parse("{{ variable | filter1 | filter2 }} ") }
   test { assert_parse("so how do you do this? with {}? or %?") }
   test { assert_parse("{{ user.names | join \", \" }}") }
+
+  test "text node" do
+    assert_equal_parse(
+      "regular text"
+      {
+    )
+  end
 
   (EXAMPLES + [README]).each do |example|
     test(example) { assert_parse(example) }

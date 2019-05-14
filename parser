@@ -11,13 +11,12 @@ u = require('./utils')
 
 ARGV = require('minimist')(process.argv.slice(2),
   strings: ['grep', 'node-type', 'hidden-paths']
-  boolean: ['colored', 'debug', 'compile', 'use-compiled']
+  boolean: ['colored', 'debug', 'use-compiled']
   default: {
     colored: true
     debug: false
     grep: ""
     'hidden-paths': ""
-    compile: false
     'use-compiled': false
     'node-type': ""
   }
@@ -25,7 +24,7 @@ ARGV = require('minimist')(process.argv.slice(2),
 
 options = [
   '_', 'colored', 'debug', 'grep',
-  'hidden-paths', 'compile', 'use-compiled',
+  'hidden-paths', 'use-compiled',
   'node-type'
 ]
 
@@ -61,14 +60,6 @@ tracer = new Tracer source,
       false
     else
       true
-
-if ARGV.compile
-  result = spawnSync('pegjs', ['template.pegjs', '--trace'])
-
-  if result.error
-    log(result.stdout)
-    error(result.stderr, ARGV)
-    process.exit(1)
 
 if ARGV['use-compiled']
   if fs.existsSync('template.js')
