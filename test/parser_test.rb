@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'bundler'
 Bundler.require(:default)
 
@@ -11,14 +13,14 @@ def irb
   $irb_done = true
 end
 
-PARSER_PATH = File.join(File.dirname(__FILE__), '../parser')
+PARSER_PATH = File.join(File.dirname(__FILE__), '../parser.js')
 EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*')]
 README = File.join(File.dirname(__FILE__), '../README')
 
 class Parser
   def self.parse(input)
     out, err, status = Open3.capture3(
-      "#{PARSER_PATH} --use-compiled --colored=false",
+      "node #{PARSER_PATH} --use-compiled --colored=false",
       stdin_data: input
     )
 
@@ -63,10 +65,7 @@ class ParserTest < Test::Unit::TestCase
   test { assert_parse("{{ user.names | join \", \" }}") }
 
   test "text node" do
-    assert_equal_parse(
-      "regular text"
-      {
-    )
+    assert_equal_parse("a", { text: "a" })
   end
 
   (EXAMPLES + [README]).each do |example|
