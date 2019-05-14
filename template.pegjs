@@ -18,30 +18,26 @@ non_zero_digit = [1-9]+
 
 interpolation =
   open_interpolation ws
-  value:(
-    short_hash /
-    short_array /
-    value
-  ) ws
+  value:(short_hash / short_array / value) ws
   filters:filter*
   ws close_interpolation
   { return { 'interpolation': { filters, value } } }
 
 tag =
   tag:(
-    if_:if_ { return { 'if': if_ } } /
-    unless:unless { return { unless } } /
-    for_:for_ { return { 'for': for_ } } /
-    assign:assign { return { assign } }
+    if_:if_
+    { return { 'if': if_ } } /
+    for_:for_
+    { return { 'for': for_ } } /
+    assign:assign
+    { return { assign } } /
+    other:other
+    { return { other } }
   ) { return { tag } }
 
 text =
   text:$(!open_interpolation !open_tag .)+
   { return { text } }
-
-expression =
-  value:value ws filters:filter*
-  { return { value, filters } }
 
 filter =
   "|" ws
@@ -75,10 +71,10 @@ if_ =
   endif_tag
   { return { 'if': if_value, 'elsif': elsif_values, 'else': else_value } }
 
-unless =
-  unless:unless_tag
-  endunless_tag
-  { return unless }
+other =
+  other:other_tag
+  endother_tag
+  { return other }
 
 for_ =
   for_value:for_tag
@@ -89,18 +85,20 @@ for_ =
 if_tag =
   open_tag ws
   "if" ws
-  expression:expression ws
+  value:value ws
+  filters:filter* ws
   close_tag
   template:template?
-  { return { expression, template } }
+  { return { value, filters, template } }
 
 elsif_tag =
   open_tag ws
   "elsif" ws
-  expression:expression ws
+  value:value ws
+  filters:filter* ws
   close_tag
   template:template?
-  { return { expression, template } }
+  { return { value, filters, template } }
 
 else_tag =
   open_tag ws
@@ -111,19 +109,30 @@ else_tag =
 
 endif_tag = open_tag ws "endif" ws close_tag
 
-unless_tag =
-  open_tag ws "unless" ws expression:expression ws close_tag template:template?
-  { return { expression, template } }
-
-endunless_tag = open_tag ws "endunless" ws close_tag
-
-for_tag =
-  open_tag ws "for" ws
-  variable:variable ws "in" ws
-  expression:expression ws
+other_tag =
+  open_tag ws
+  name:name ws
+  value:value? ws
+  filters:filter* ws
   close_tag
   template:template?
-  { return { variable, expression, template } }
+  { return { name, value, filters, template } }
+
+endother_tag =
+  open_tag ws
+  "end" ws
+  close_tag
+
+for_tag =
+  open_tag ws
+  "for" ws
+  variable:variable ws
+  "in" ws
+  value:value ws
+  filters:filter* ws
+  close_tag
+  template:template?
+  { return { variable, value, filters, template } }
 
 endfor_tag = open_tag ws "endfor" ws close_tag
 

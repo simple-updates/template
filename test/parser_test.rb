@@ -14,14 +14,14 @@ def irb
   $irb_done = true
 end
 
-
 PARSER_PATH = File.join(File.dirname(__FILE__), '../build/parser.js')
 EXAMPLES = Dir[File.join(File.dirname(__FILE__), '../examples/*.template')]
 README = File.join(File.dirname(__FILE__), '../README.md')
 BUILD = File.join(File.dirname(__FILE__), '../build.sh')
 
 puts "execute #{BUILD}"
-`#{BUILD}`
+result = system(BUILD)
+abort "build failed" if result == false
 
 class Parser
   def self.parse(input)
