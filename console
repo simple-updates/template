@@ -1,0 +1,57 @@
+#!/usr/bin/env coffee
+
+# see http://coffeescript.loopinfinito.com.br/documentation/docs/repl.html
+
+fs = require('fs')
+os = require('os')
+_ = require('underscore')
+
+peg = require('pegjs')
+
+readline = require('readline')
+
+Template = peg.generate(fs.readFileSync("template.pegjs", 'utf8'))
+
+console.log("exit/quit/any templating input")
+
+path = "#{os.homedir()}/.cache/template_history"
+
+unless fs.existsSync(path)
+  fs.writeFileSync(path, "")
+
+history = fs.readFileSync(path, "utf8").toString()
+
+completer = (line) ->
+  completions = "exit quit {{ {% }} %} "
+  completions += "if elsif else endif for endfor end"
+  completions = completions.split(' ')
+
+  matching = _.last(line.split(' '))
+
+  hits = completions.filter (completion) =>
+    completion.startsWith(matching)
+
+  if hits.length > 0
+    [hits, matching]
+  else
+    [completions, matching]
+
+rl = readline.createInterface(
+  input: process.stdin
+  output: process.stdout
+  completer: completer
+)
+
+question = =>
+  rl.question '> ', (line) =>
+    if line == "exit" or line == "quit"
+      rl.close()
+    else
+      try
+        console.log(JSON.stringify(Template.parse(line), null, 2))
+      catch error
+        console.error(error.message)
+
+      question()
+
+question()
