@@ -18,7 +18,7 @@ close_array = "]"
 comma = ","
 key_value_separator = ":"
 dot = "."
-filter_separator = "|"
+method_separator = "|"
 open_group = "("
 close_group = ")"
 
@@ -58,7 +58,7 @@ special =
   comma /
   key_value_separator /
   dot /
-  filter_separator /
+  method_separator /
   open_group /
   close_group
 
@@ -104,9 +104,9 @@ interpolation =
     short_array /
     value
   )? _
-  filters:filter* _
+  methods:method* _
   close_interpolation
-  { return { 'interpolation': { filters, value } } }
+  { return { 'interpolation': { methods, value } } }
 
 tag =
   tag:(
@@ -124,8 +124,8 @@ text =
   text:$(!open_interpolation !open_tag .)+
   { return { text } }
 
-filter =
-  filter_separator _
+method =
+  method_separator _
   name:name _
   parameters:parameters
   { return { name, parameters } }
@@ -145,9 +145,9 @@ assign_tag =
   name:name _
   equal _
   value:value _
-  filters:filter* _
+  methods:method* _
   close_tag
-  { return { name, value, filters } }
+  { return { name, value, methods } }
 
 full_if_tag =
   if_value:if_tag
@@ -171,19 +171,19 @@ if_tag =
   open_tag _
   if_ _
   value:value _
-  filters:filter* _
+  methods:method* _
   close_tag
   template:template?
-  { return { value, filters, template } }
+  { return { value, methods, template } }
 
 elsif_tag =
   open_tag _
   elsif _
   value:value _
-  filters:filter* _
+  methods:method* _
   close_tag
   template:template?
-  { return { value, filters, template } }
+  { return { value, methods, template } }
 
 else_tag =
   open_tag _
@@ -198,10 +198,10 @@ other_tag =
   open_tag _
   name:name _
   value:value? _
-  filters:filter* _
+  methods:method* _
   close_tag
   template:template?
-  { return { name, value, filters, template } }
+  { return { name, value, methods, template } }
 
 endother_tag =
   open_tag _
@@ -214,10 +214,10 @@ for_tag =
   variable:name _
   in _
   value:value _
-  filters:filter* _
+  methods:method* _
   close_tag
   template:template?
-  { return { variable, value, filters, template } }
+  { return { variable, value, methods, template } }
 
 endfor_tag =
   open_tag _
@@ -245,9 +245,9 @@ value =
   ) /
   open_group _
   value:value? _
-  filters:filter* _
+  methods:method* _
   close_group
-  { return { expression: { value, filters } } }
+  { return { expression: { value, methods } } }
 
 key_value =
   key:key _
