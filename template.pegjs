@@ -5,7 +5,6 @@ _ = (space / newline)*
 // syntax
 space = " "
 newline = "\n"
-open_start = "{"
 open_interpolation = "{{"
 close_interpolation = "}}"
 open_tag = "{%"
@@ -20,6 +19,8 @@ comma = ","
 key_value_separator = ":"
 dot = "."
 filter_separator = "|"
+open_group = "("
+close_group = ")"
 
 escape = "\\"
 nil = "null"
@@ -38,8 +39,7 @@ endfor = "endfor"
 end = "end"
 e = "e" / "E"
 integer_separator = "_"
-
-digit = [0-9]+
+digit = [0-9]
 
 special =
   space /
@@ -58,7 +58,9 @@ special =
   comma /
   key_value_separator /
   dot /
-  filter_separator
+  filter_separator /
+  open_group /
+  close_group
 
 name =
   $(
@@ -101,7 +103,7 @@ interpolation =
     short_hash /
     short_array /
     value
-  ) _
+  )? _
   filters:filter* _
   close_interpolation
   { return { 'interpolation': { filters, value } } }
@@ -119,17 +121,14 @@ tag =
   ) { return { tag } }
 
 text =
-  text:$(
-    (!open_start .) /
-    (!open_interpolation !open_tag open_start)
-  )+
+  text:$(!open_interpolation !open_tag .)+
   { return { text } }
 
 filter =
   filter_separator _
-  method:name _
+  name:name _
   parameters:parameters
-  { return { method, parameters } }
+  { return { name, parameters } }
 
 parameters =
   (
@@ -143,12 +142,12 @@ parameters =
 
 assign_tag =
   open_tag _
-  variable:name _
+  name:name _
   equal _
   value:value _
   filters:filter* _
   close_tag
-  { return { variable, value, filters } }
+  { return { name, value, filters } }
 
 full_if_tag =
   if_value:if_tag
@@ -243,7 +242,12 @@ value =
     { return { nil } } /
     variable:name _
     { return { variable } }
-  )
+  ) /
+  open_group _
+  value:value? _
+  filters:filter* _
+  close_group
+  { return { expression: { value, filters } } }
 
 key_value =
   key:key _

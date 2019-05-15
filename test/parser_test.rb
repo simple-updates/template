@@ -44,13 +44,27 @@ class ParserTest < Test::Unit::TestCase
     define_method("test_#{name || block.source}", &block)
   end
 
+  def escape(input)
+    input.gsub("\\") { "\\\\" }.gsub('"') { "\\\"" }
+  end
+
   def assert_parse(input)
     result = Parser.parse(input)
 
     assert_equal(
       "",
       result.err,
-      "#{result.output}\n\n  ./parser \"#{input.gsub('"') { "\\\"" }}\"\n\n"
+      "#{result.output}\n\n  ./parser \"#{escape(input)}\"\n\n"
+    )
+
+    json_input = "{{#{JSON.parse(result.out).to_json}}}"
+
+    json_result = Parser.parse(json_input)
+
+    assert_equal(
+      "",
+      json_result.err,
+      "#{json_result.output}\n\n  ./parser \"#{escape(json_input)}\"\n\n"
     )
   end
 

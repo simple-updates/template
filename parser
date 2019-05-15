@@ -39,6 +39,7 @@ u.error = (string) =>
     console.error(string)
 
 # argv
+# yargs?
 
 ARGV = minimist(process.argv.slice(2),
   strings: ['grep', 'node-type', 'hidden-paths']
