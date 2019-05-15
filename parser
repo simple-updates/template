@@ -69,10 +69,10 @@ if _.any(extra_options) || ARGV._.length > 1
 
 ARGV.debug = true if ARGV.grep != null || ARGV['node-type'] != null
 
-ARGV.source = ARGV._.join(' ')
-
-unless process.stdin.isTTY
-  ARGV.source += fs.readFileSync(0).toString().trim()
+if process.stdin.isTTY
+  ARGV.source = ARGV._.join(' ')
+else
+  ARGV.source = fs.readFileSync(0).toString().trim()
 
 ARGV['hidden-paths'] = ARGV['hidden-paths'].split(',').map((s) -> s.trim())
 ARGV['hidden-paths'] = _.reject(ARGV['hidden-paths'], (s) -> s == "")
@@ -105,7 +105,7 @@ else if fs.existsSync("#{DIR}/template.pegjs")
     u.error("#{exception.name}: #{exception.message}")
     process.exit(1)
 else
-  u.error("can't find template.js or template.pegjs")
+  u.error("can't find neither of template.js or template.pegjs")
   process.exit(1)
 
 # parsing

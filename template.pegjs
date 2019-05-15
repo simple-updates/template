@@ -32,10 +32,8 @@ equal = "="
 if_ = "if"
 elsif = "elsif"
 else_ = "else"
-endif = "endif"
 for = "for"
 in = "in"
-endfor = "endfor"
 end = "end"
 e = "e" / "E"
 integer_separator = "_"
@@ -192,16 +190,20 @@ else_tag =
   template:template?
   { return { template } }
 
-endif_tag = open_tag _ endif _ close_tag
+endif_tag =
+  open_tag _
+  end _
+  close_tag
 
 other_tag =
   open_tag _
   name:name _
   value:value? _
+  parameters:parameters? _
   methods:method* _
   close_tag
   template:template?
-  { return { name, value, methods, template } }
+  { return { name, value, parameters, methods, template } }
 
 endother_tag =
   open_tag _
@@ -211,17 +213,17 @@ endother_tag =
 for_tag =
   open_tag _
   for _
-  variable:name _
+  name:name _
   in _
   value:value _
   methods:method* _
   close_tag
   template:template?
-  { return { variable, value, methods, template } }
+  { return { name, value, methods, template } }
 
 endfor_tag =
   open_tag _
-  endfor _
+  end _
   close_tag
 
 value =
@@ -240,8 +242,8 @@ value =
     { return { float } } /
     nil:nil _
     { return { nil } } /
-    variable:name _
-    { return { variable } }
+    name:name _
+    { return { name } }
   ) /
   open_group _
   value:value? _
