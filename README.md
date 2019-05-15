@@ -30,15 +30,21 @@
 a bit more complicated:
 
 ```coffee
-{% def random n:1 %}
-  {% if n|equal 1|or (n|is_a "float") %}
-    {{|rand|times n}}
-  {% else %}
-    {{|rand|times n|round}}
-  {% end %}
-{% end %}
+{- def random n:1 }
+  {- if n | equal 1 | or (n | is_a "float") }
+    {< rand | times n }
+  {- else }
+    {< rand | times n |round }
+  {- end }
+{ end }
 
-{{|random (1|plus (random 10))}}
+{< random (1 | plus (random 10)) }
+
+{{ user.name }}
+
+some ruby code because why not:
+
+<code>10.times { |i| puts i }</code>
 ```
 
 (and so much more)
