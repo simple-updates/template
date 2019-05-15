@@ -121,8 +121,7 @@ try
 catch exception
   throw exception unless exception.location
 
-  # u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
-  u.log(tracer.getBacktraceString(matchOptions)) if ARGV.debug
+  u.log(tracer.getParseTreeString(matchOptions)) if ARGV.debug
 
   if exception.location.start.line
     u.log(ARGV.source.split("\n")[exception.location.start.line - 1], colored: false)
