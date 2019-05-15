@@ -27,7 +27,7 @@
 </p>
 ```
 
-some pretty sweet syntax is possible:
+a bit more complicated:
 
 ```coffee
 {% def random n:1 %}
@@ -40,6 +40,8 @@ some pretty sweet syntax is possible:
 
 {{|random (1|plus (random 10))}}
 ```
+
+(and so much more)
 
 **trying it out without downloading anything**
 
